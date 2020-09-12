@@ -5,12 +5,26 @@ using System.Text;
 
 namespace ess
 {
+    /// <summary>
+    /// Строка из задания
+    /// </summary>
     public struct ProblemString : IEquatable<ProblemString>
     {
         public static ProblemString Empty { get; } = new ProblemString(string.Empty, -1, -1);
 
+        /// <summary>
+        /// Сама строка
+        /// </summary>
         public string RawString { get; }
+
+        /// <summary>
+        /// Индекс точки
+        /// </summary>
         public int PointIndex { get; }
+
+        /// <summary>
+        /// Цифра
+        /// </summary>
         public int Number { get; }
 
         ProblemString(string rawString, int pointIndex, int number)

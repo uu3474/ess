@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace ess
 {
+    /// <summary>
+    /// Сортировщик строк в отдельном потоке, для некоторого числа источников строк
+    /// </summary>
     public class BackgroundSortUnit : ILineSource
     {
         readonly IReadOnlyList<ILineSource> _sources;
@@ -74,6 +77,8 @@ namespace ess
 
         void Sort()
         {
+            // Используем дерево в качестве очереди с приоритетами, для быстрого выбора наименьшего значения;
+            // Лист в качестве значения, так как строки могут повторяться;
             var tree = new SortedDictionary<ProblemString, List<ILineSource>>(ProblemStringComparer.Default);
 
             for (int i = 0; i < _sources.Count; i++)

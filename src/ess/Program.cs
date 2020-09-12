@@ -17,6 +17,7 @@ namespace ess
             Console.WriteLine("Pls enter arguments:");
             args = Console.ReadLine().Split();
 #endif
+            // Используем библиотеку CommandLineParser для удобной организации работы с аргументами командной строки
             await CommandLine.Parser.Default.ParseArguments<GenerateOptions, SortOptions, LinesCountOptions, CheckSortOptions, CheckDataOptions>(args)
                 .MapResult(
                     async (GenerateOptions options) => await Generate(options),
@@ -33,6 +34,9 @@ namespace ess
         static async Task Sort(SortOptions options)
             => await new Sorter(options).Sort();
 
+        /// <summary>
+        /// Подсчет кол-ва строк в файле
+        /// </summary>
         static Task LinesCount(LinesCountOptions options)
         {
             if (string.IsNullOrWhiteSpace(options.FileName))
@@ -50,6 +54,9 @@ namespace ess
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Проверить, что файл отсортирован
+        /// </summary>
         static Task CheckSort(CheckSortOptions options)
         {
             if (string.IsNullOrWhiteSpace(options.FileName))
@@ -87,6 +94,9 @@ namespace ess
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Сравнить 2 файла, простая реализация, не подойдет для больших файлов
+        /// </summary>
         static Task CheckData(CheckDataOptions options)
         {
             if (string.IsNullOrWhiteSpace(options.FirstFileName))

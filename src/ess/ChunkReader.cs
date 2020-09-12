@@ -7,6 +7,9 @@ using System.Threading;
 
 namespace ess
 {
+    /// <summary>
+    /// Чтение строк из чанка
+    /// </summary>
     public class ChunkReader : ILineSource, IDisposable
     {
         StreamReader _chunk;
@@ -39,6 +42,10 @@ namespace ess
             return false;
         }
 
+        /// <summary>
+        /// Чтение строк из файла;
+        /// Наверное стоило не допускать многопоточного чтения, но я не увидел особой разницы в сравнении с однопоточным чтением;
+        /// </summary>
         void Load()
         {
             if (EOF)

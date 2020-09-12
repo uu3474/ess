@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace ess
 {
+    /// <summary>
+    /// Соритровка и сохранение чанка
+    /// </summary>
     public class ChunkWriter
     {
         List<ProblemString> _data;

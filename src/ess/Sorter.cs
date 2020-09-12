@@ -25,7 +25,8 @@ namespace ess
         readonly long _mergeOutputBufferMaxSize;
         readonly int _sortUnitMaxLinesCount;
         readonly int _sortThreadsCount;
-        
+
+        // Используем Dataflow для удобной организации многопоточных конвейров
         readonly TransformBlock<ChunkWriter, ChunkWriter> _sortChunkBlock;
         readonly ActionBlock<ChunkWriter> _writeChunkBlock;
         readonly ActionBlock<List<string>> _writeResultPartBlock;
@@ -52,14 +53,14 @@ namespace ess
                 : _options.SortThreadsCount;
 
             _sortChunkBlock = new TransformBlock<ChunkWriter, ChunkWriter>(SortChunk,
-                new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = _sortThreadsCount });
+                new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = _sortThreadsCount }); // Сортируем многопоточно
             _writeChunkBlock = new ActionBlock<ChunkWriter>(WriteChunk,
-                new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 });
+                new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = 1 }); // Записываем чанки в один поток
 
             _sortChunkBlock.LinkTo(_writeChunkBlock);
 
             _writeResultPartBlock = new ActionBlock<List<string>>(WriteResultPartBlock,
-                new ExecutionDataflowBlockOptions { EnsureOrdered = true, MaxDegreeOfParallelism = 1 });
+                new ExecutionDataflowBlockOptions { EnsureOrdered = true, MaxDegreeOfParallelism = 1 }); // Записываем результат в один поток
         }
 
         void DeleteChunks()
@@ -68,13 +69,18 @@ namespace ess
                 Directory.Delete(Consts.ChunksDirectoryName, true);
         }
 
+        void DeleteOldResult()
+        {
+            if (File.Exists(_options.OutputFileName))
+                File.Delete(_options.OutputFileName);
+        }
+
         public async Task Sort()
         {
             DeleteChunks();
             Directory.CreateDirectory(Consts.ChunksDirectoryName);
-
-            if (File.Exists(_options.OutputFileName))
-                File.Delete(_options.OutputFileName);
+            
+            DeleteOldResult();
 
             Console.WriteLine($"Sort file '{_options.InputFileName}' to file '{_options.OutputFileName}', sort threads: {_sortThreadsCount}");
             var sortStopwatch = Stopwatch.StartNew();
@@ -171,6 +177,9 @@ namespace ess
                 yield return list.GetRange(i, Math.Min(elementsCount, list.Count - i));
         }
 
+        /// <summary>
+        /// Запуск многопоточной сортировки
+        /// </summary>
         ILineSource GetSortOutputSource(int chunksCount)
         {
             long chunkPartLoadSize = _maxDataSize / chunksCount;
@@ -179,14 +188,15 @@ namespace ess
 
             var readers = new List<ChunkReader>(chunksCount);
             for (int i = 0; i < chunksCount; i++)
-                readers.Add(new ChunkReader(i, chunkPartLoadSize));
+                readers.Add(new ChunkReader(i, chunkPartLoadSize)); // Долгая стадия чтения начала всех чанков, может стоило распаралеллить
 
-            if (_sortThreadsCount <= 2 || readers.Count < _sortThreadsCount * 2)
+            
+            if (_sortThreadsCount <= 2 || readers.Count < _sortThreadsCount * 2) // Если чанков мало, или потоков мало, то будем сливать все чанки в одном потоке
             {
                 var unit = new BackgroundSortUnit(readers, _sortUnitMaxLinesCount);
                 return unit;
             }
-            else
+            else // Если потоков и чанков хватает, запускаем сортировку в несколько потоков, а результаты этих сортировок соединяем ещё в одном потоке 
             {
                 var subUnitsCount = _sortThreadsCount - 1;
                 var readersToUnit = readers.Count / subUnitsCount + 1;

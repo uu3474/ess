@@ -11,8 +11,12 @@ using System.Threading.Tasks;
 
 namespace ess
 {
+    /// <summary>
+    /// Генератор тестовых данных
+    /// </summary>
     public class Generator
     {
+        // Символы для генерации текста строки
         static char[] _vowels = new char[] 
         { 
             'A', 'E', 'I', 'O', 'U', 'Y' 
@@ -23,7 +27,15 @@ namespace ess
             'K', 'L', 'M', 'N', 'P', 'Q', 'R', 
             'S', 'T', 'V', 'W', 'X', 'Y', 'Z' 
         };
+
+        /// <summary>
+        /// Максимальный размер числа в строке
+        /// </summary>
         static int _maxNumber = 100_000;
+
+        /// <summary>
+        /// Максимальный размер словаря для текста
+        /// </summary>
         static int _maxDictionarySize = 100_000;
 
         readonly GenerateOptions _options;
@@ -51,6 +63,10 @@ namespace ess
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Сгенерировать текстовую часть для строки;
+        /// Используем TextWriter для лучшей производительности;
+        /// </summary>
         int GenerateText(TextWriter writer)
         {
             int size = 0;
@@ -105,10 +121,10 @@ namespace ess
                     int action = _random.Next(3);
                     switch (action)
                     {
-                        case 0:
+                        case 0: // в 1 из 3 случаев генерируем новую строку
                             generated += GenerateText(writer);
                             break;
-                        case 1:
+                        case 1: // в 1 из 3 добавляем текст строки в словарь и в файл
                             if (dictionary.Count < _maxDictionarySize)
                             {
                                 using var textBuffer = new StringWriter();
@@ -122,7 +138,7 @@ namespace ess
                                 generated += GenerateText(writer);
                             }
                             break;
-                        case 2:
+                        case 2: // в 1 из 3 берем тест строки из словаря, цифру генерируем
                             if (dictionary.Count > 0)
                             {
                                 var text = dictionary[_random.Next(dictionary.Count)];

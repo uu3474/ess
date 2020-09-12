@@ -8,8 +8,8 @@ namespace ess
     public static class Consts
     {
         /// <summary>
-        /// Размер символа
-        /// Все символы, которые я использую, занимают 1 байт
+        /// Размер символа;
+        /// Все символы, которые я использую, занимают 1 байт;
         /// </summary>
         public static int CharSize { get; } = 1;
 
@@ -18,6 +18,9 @@ namespace ess
         /// </summary>
         public static int LineBreakSize { get; } = 2;
 
+        /// <summary>
+        /// ПОлучить размер строки в байтах
+        /// </summary>
         public static long GetLineSize(string line)
             => line.Length * CharSize + LineBreakSize;
 
@@ -31,6 +34,9 @@ namespace ess
         /// </summary>
         public static string ChunkFileExtension { get; } = ".chunk";
 
+        /// <summary>
+        /// Получить имя файла чанка
+        /// </summary>
         public static string GetChunkFileName(int id)
             => Path.Combine(ChunksDirectoryName, id.ToString() + ChunkFileExtension);
 

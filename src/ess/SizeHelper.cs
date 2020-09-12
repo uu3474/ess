@@ -6,6 +6,15 @@ namespace ess
 {
     public static class SizeHelper
     {
+        /// <summary>
+        /// Получить размер в байтах из строки размера;
+        /// Формат: цифра + литерал;
+        /// Литералы:
+        ///     b - байты;
+        ///     k - килобайты;
+        ///     m - мегабайты;
+        ///     g - гигабайты;
+        /// </summary>
         public static long GetBytesFromSizeString(string sizeStr)
         {
             if (string.IsNullOrWhiteSpace(sizeStr))
