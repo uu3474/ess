@@ -198,8 +198,7 @@ namespace ess
             }
             else // Если потоков и чанков хватает, запускаем сортировку в несколько потоков, а результаты этих сортировок соединяем ещё в одном потоке 
             {
-                var subUnitsCount = _sortThreadsCount - 1;
-                var readersToUnit = readers.Count / subUnitsCount + 1;
+                var readersToUnit = readers.Count / _sortThreadsCount + 1;
                 var subUnits = SplitList(readers, readersToUnit)
                     .Select(x => new BackgroundSortUnit(x.ToList(), _sortUnitMaxLinesCount))
                     .ToList();
